@@ -53,19 +53,23 @@ extra-doc-files:    CHANGELOG.md
 
 common warnings
     ghc-options: -Wall
+    default-extensions: LambdaCase
+                        MultiWayIf
 
 library
     -- Import common warning flags.
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  THSH.QQ
-                      THSH.SubProc
+    exposed-modules:  THSH.Funclet
+                      THSH.Script
+                      THSH.QQ
                       THSH
 
     -- Modules included in this library but not exported.
     other-modules:    THSH.Internal.THUtils
                       THSH.Internal.HsExprUtils
+                      THSH.Internal.PyFInternals
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -77,6 +81,7 @@ library
                       transformers,
                       PyF,
                       parsec,
+                      filepath,
                       process,
                       temporary
 
@@ -111,4 +116,5 @@ test-suite THSH-test
     -- Test dependencies.
     build-depends:
         base >=4.17.0.0,
+        PyF,
         THSH

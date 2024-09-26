@@ -1,5 +1,9 @@
 module THSH
-  ( thsh
+  ( module THSH.Funclet
+  , module THSH.Script
+  , module THSH.QQ
   ) where
 
-import           THSH.QQ (thsh)
+import           THSH.Funclet
+import           THSH.QQ
+import           THSH.Script

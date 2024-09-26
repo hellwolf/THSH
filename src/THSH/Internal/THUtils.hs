@@ -1,8 +1,11 @@
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP                   #-}
+{-# LANGUAGE TemplateHaskellQuotes #-}
 
 module THSH.Internal.THUtils
   ( reportErrorAt
+  , toName
   , lookupName
+  , freeVariableByNameExists
   ) where
 
 import           GHC                        (SrcSpan, moduleNameString)
@@ -10,8 +13,9 @@ import           GHC.Tc.Errors.Types        (TcRnMessage (TcRnUnknownMessage))
 import           GHC.Tc.Types               (TcM)
 import           GHC.Tc.Utils.Monad         (addErrAt)
 import           GHC.Types.Error            (NoDiagnosticOpts (NoDiagnosticOpts), UnknownDiagnostic (UnknownDiagnostic))
-import           GHC.Types.Name             (occNameString)
+import           GHC.Types.Name             (getOccString, occNameString)
 import           GHC.Types.Name.Reader      (RdrName (..))
+import qualified GHC.Unit.Module            as Module
 import           GHC.Utils.Error            (mkPlainError, noHints)
 import           GHC.Utils.Outputable       (text)
 import qualified Language.Haskell.TH        as TH
@@ -19,7 +23,6 @@ import           Language.Haskell.TH.Syntax (Q (Q))
 --
 import           Data.Maybe                 (isJust)
 import           Unsafe.Coerce              (unsafeCoerce)
-
 
 -- | This function is similar to TH reportError, however it also provide
 -- correct SrcSpan, so error are localised at the correct position in the TH
@@ -50,6 +53,15 @@ reportErrorAt loc msg = unsafeRunTcM $ addErrAt loc msg'
 unsafeRunTcM :: TcM a -> Q a
 unsafeRunTcM m = Q (unsafeCoerce m)
 
+toName :: RdrName -> TH.Name
+toName n = case n of
+  (Unqual o) -> TH.mkName (occNameString o)
+  (Qual m o) -> TH.mkName (Module.moduleNameString m <> "." <> occNameString o)
+  (Orig _m _o) -> error "PyFMeta: not supported toName (Orig _)"
+  (Exact nm) -> case getOccString nm of
+    "[]" -> '[]
+    "()" -> '()
+    _    -> error "toName: exact name encountered"
 
 lookupName :: RdrName -> Q Bool
 lookupName n = case n of
@@ -58,3 +70,10 @@ lookupName n = case n of
   -- No idea how to lookup for theses names, so consider that they exists
   (Orig _m _o) -> pure True
   (Exact _)    -> pure True
+
+freeVariableByNameExists :: (b, RdrName) -> Q (Maybe (String, b))
+freeVariableByNameExists (loc, name) = do
+  res <- lookupName name
+  if res
+    then pure Nothing
+    else pure (Just ("Variable not in scope: " <> show (toName name), loc))
