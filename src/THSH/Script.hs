@@ -23,7 +23,7 @@ import           THSH.Funclet       (AnyFunclet, Funclet (..), runFuncletWithFif
 data Script = MkScript { source   :: String
                        , funclets :: [AnyFunclet]
                        }
-              deriving Show
+            -- TODO deriving Show
 
 instance Funclet Script where
   runFunclet (MkScript { source, funclets }) (hIn, hOut, hErr) = withSystemTempDirectory "thsh-script.d" $ \ dir ->
@@ -66,6 +66,7 @@ sh = id
 
 genInitCode :: Int -> String
 genInitCode nFunclets = [str|\
+# set -x
 __initFunclets() {
   n="$1"
   [ "$n" == "-1" ] && return
@@ -81,13 +82,15 @@ __initFunclets() {
 genStubCode :: String
 genStubCode = [str|\
 #+BEGIN_SRC THSH script stub code
+# set -x
 __pipeFunclet() {
   # connect to the fifos of nth functlet
   i="$1"
   d="$(dirname "$0")/$i"
-  cat > "$d"/0.fifo <&0 &
-  cat < "$d"/2.fifo >&2 &
-  cat < "$d"/1.fifo >&1
+  command > "$d"/0.fifo
+  cat >&1 "$d"/1.fifo &
+  cat >&2 "$d"/2.fifo &
+  cat >   "$d"/0.fifo &
 }
 #+END_SRC
 |]

@@ -63,6 +63,7 @@ library
     -- Modules exported by the library.
     exposed-modules:  THSH.Funclet
                       THSH.Script
+                      THSH.Fn
                       THSH.QQ
                       THSH
 

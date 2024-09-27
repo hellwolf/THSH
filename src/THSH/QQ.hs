@@ -42,7 +42,7 @@ thsh = QuasiQuoter
     toExp s = do
       loc <- TH.location
       exts <- TH.extsEnabled
-      let context = PyF.ParsingContext (Just ('%', '!')) exts
+      let context = PyF.ParsingContext (Just ('«', '»')) exts
 
       -- Setup the parser so it matchs the real original position in the source
       -- code.
@@ -80,6 +80,7 @@ matchItem (PyF.Raw x)                   = (False, [| x |])
 matchItem (PyF.Replacement (_, expr) y) =
   let isFunclet = case expr of
                     AppE (VarE a) _ -> if | TH.nameBase a == "sh" -> True
+                                          | TH.nameBase a == "fn" -> True
                                           | otherwise             -> False
                     _               -> False
   in (isFunclet, if isFunclet then [| [MkAnyFunclet $(pure expr)] |]
