@@ -1,6 +1,6 @@
 > [!NOTE]
 >
-> This project is work in progress, and a proof-of-concept (PoC) is planned for the
+> This project is a work in progress, and a proof-of-concept (PoC) is planned for the
 > [MuniHac2024](https://munihac.de/2024.html) event.
 
 THSH
@@ -13,7 +13,7 @@ using Template Haskell.
 
 ## Gradual Approach
 
-The key goal of the project is to enable a gradual approach to add strongly-typed Haskell code to enhance your shell
+The key goal of the project is to enable a gradual approach to adding strongly-typed Haskell code to enhance your shell
 scripting experience.
 
 It is gradual because you can wrap any shell script into a Template Haskell quasi-quotation with `thsh`:
@@ -28,7 +28,7 @@ echo "Hello Haskell!"
 
 > [!WARNING]
 >
-> The current PoC uses PyF project's internal code to achieve parsing logic, which presents difficult in choosing better
+> The current PoC uses the PyF project's internal code to achieve parsing logic, which presents difficulty in choosing a better
 > Haskell code delimiters other than "« ... »", for now. In the next version, a more palatable syntax should be
 > achieved, e.g. "!{ ... }".
 
@@ -43,11 +43,11 @@ curl -s https://example.org/ | «fn (ContentFn (\content -> "Number of occurrenc
 |]
 ```
 
---> "Number of occurrence of the word 'example' is 1"
+--> "Number of occurrences of the word 'example' is 1"
 
 You can also process each line independently:
 
-```
+```sh
 [thsh|\
 «fn lsum» <<EOF
 ("apple",  1.2, 100.2)
@@ -69,7 +69,7 @@ EOF
 
 The `thsh` quoted code can compose with each other:
 
-```
+```haskell
 s0 :: Script
 s0 = [thsh| head -n1 | bc |]
 
@@ -101,10 +101,10 @@ done
 
 # Comparing To eDSL Solutions
 
-We should note that there have been multiple projects allowing mixing Haskell code with shell scripting. All of them
+We should note that there have been multiple projects allowing the mixing of Haskell code with shell scripting. All of them
 require their users to learn an eDSL of their own.
 
-Here is a incomplete list of these projects:
+Here is an incomplete list of these projects:
 
 1. [turtle](https://hackage.haskell.org/package/turtle) : turtle is a reimplementation of the Unix command line
    environment in Haskell so that you can use Haskell as both a shell and a scripting language.
@@ -112,13 +112,15 @@ Here is a incomplete list of these projects:
 3. [shh](https://hackage.haskell.org/package/shh) : Simple shell scripting from Haskell
 4. [HSH](https://hackage.haskell.org/package/HSH) : Library to mix shell scripting with Haskell programs.
 
+By now, it should be evident to you that requiring minimum learning of a new eDSL, aka "noDSL" to be tongue-in-cheek, sets this project apart to offer a viable alternative to Haskell enthusiasts.
+
 # (TODOs)
 
 **Features**
 
 - More `FnFunction` types.
-- THSH script loader, which uses either cabalrun and ghci.
-- Better quoting syntax e.g. "!{ ... }": to replace `PyF` parser or work with the upstream to reuse.
+- THSH script loader, which uses either cabalrun or ghci.
+- Better quoting syntax, e.g. "!{ ... }": to replace the `PyF` parser or work with the upstream to reuse.
 
 **Maintainability**
 
