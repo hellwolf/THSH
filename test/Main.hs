@@ -19,18 +19,6 @@ echo "««"
 echo "»»"
 |]
 
-s0 :: Script
-s0 = [thsh| bc |]
-
-testComposability :: IO ExitCode
-testComposability = runFuncletWithStdHandles [thsh|\
-for i in `seq 0 10`;do
-  expr="2 ^ $i"
-  echo -n "$expr = "
-  echo $expr | «sh s0»
-done
-|]
-
 testScriptFunclet :: IO ExitCode
 testScriptFunclet = do
   let s0 = [thsh| sed "s/Haskell/Haskell❤️/g" |]
@@ -49,7 +37,7 @@ done
 
 testFn :: IO ExitCode
 testFn = runFuncletWithStdHandles [thsh|\
-curl -s https://example.org/ | «fn (ContentFn (\content -> "Number of occurrence of the word 'example' is "
+curl -s https://example.org/ | «fn (ContentFn (\content -> "Number of occurrences of the word 'example' is "
     <> show (length (filter ((== "examples"). fmap toLower) . words $ content))
     <> "\n"
 ))»

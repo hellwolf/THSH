@@ -28,8 +28,8 @@ echo "Hello Haskell!"
 
 > [!WARNING]
 >
-> The current PoC uses the PyF project's internal code to achieve parsing logic, which presents difficulty in choosing a better
-> Haskell code delimiters other than "« ... »", for now. In the next version, a more palatable syntax should be
+> The current PoC uses the PyF project's internal code to achieve parsing logic, which presents difficulty in choosing a
+> better Haskell code delimiters other than "« ... »", for now. In the next version, a more palatable syntax should be
 > achieved, e.g. "!{ ... }".
 
 You can pipe the entire outputs from a process to a Haskell function:
@@ -101,8 +101,8 @@ done
 
 # Comparing To eDSL Solutions
 
-We should note that there have been multiple projects allowing the mixing of Haskell code with shell scripting. All of them
-require their users to learn an eDSL of their own.
+We should note that there have been multiple projects allowing the mixing of Haskell code with shell scripting. All of
+them require their users to learn an eDSL of their own.
 
 Here is an incomplete list of these projects:
 
@@ -112,7 +112,8 @@ Here is an incomplete list of these projects:
 3. [shh](https://hackage.haskell.org/package/shh) : Simple shell scripting from Haskell
 4. [HSH](https://hackage.haskell.org/package/HSH) : Library to mix shell scripting with Haskell programs.
 
-By now, it should be evident to you that requiring minimum learning of a new eDSL, aka "noDSL" to be tongue-in-cheek, sets this project apart to offer a viable alternative to Haskell enthusiasts.
+By now, it should be evident to you that requiring minimum learning of a new eDSL, aka "noDSL" to be tongue-in-cheek,
+sets this project apart to offer a viable alternative to Haskell enthusiasts.
 
 # (TODOs)
 
