@@ -71,6 +71,7 @@ library
     other-modules:    THSH.Internal.THUtils
                       THSH.Internal.HsExprUtils
                       THSH.Internal.PyFInternals
+                      THSH.Internal.ProcessUtils
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
