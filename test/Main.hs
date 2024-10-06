@@ -19,11 +19,23 @@ echo "««"
 echo "»»"
 |]
 
+s0 :: Script
+s0 = [thsh| bc |]
+
+testComposability :: IO ExitCode
+testComposability = runFuncletWithStdHandles [thsh|\
+for i in `seq 0 10`;do
+  expr="2 ^ $i"
+  echo -n "$expr = "
+  echo $expr | «sh s0»
+done
+|]
+
 testScriptFunclet :: IO ExitCode
 testScriptFunclet = do
   let s0 = [thsh| sed "s/Haskell/Haskell❤️/g" |]
       s1 = [thsh| echo Brrrr |]
-      s2 = [thsh| head -n1 | bc |]
+      s2 = [thsh| bc |]
   runFuncletWithStdHandles [thsh|\
 echo "Hello, Haskell." | «sh s0»
 echo "" | «sh s1» | sed 's/r/R/g'
@@ -37,7 +49,6 @@ done
 
 testFn :: IO ExitCode
 testFn = runFuncletWithStdHandles [thsh|\
-# set -x
 curl -s https://example.org/ | «fn (ContentFn (\content -> "Number of occurrence of the word 'example' is "
     <> show (length (filter ((== "examples"). fmap toLower) . words $ content))
     <> "\n"
@@ -51,11 +62,10 @@ echo -n "Sum of the sales: "; {
 ("orange", 2.0, 34.2)
 EOF
 } | tail -n1
-|]
-  where lsum = LineReadFn
-               (\ (_ :: String, price, quantity) s -> let s' = s + price * quantity
-                                                      in (s', Just (show s')))
-               (0.0 :: Float)
+|] where lsum = LineReadFn
+                (\ (_ :: String, price, quantity) s -> let s' = s + price * quantity
+                                                       in (s', Just (show s')))
+                (0.0 :: Float)
 
 main :: IO ()
 main = do
