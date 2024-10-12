@@ -53,12 +53,21 @@ extra-doc-files:    CHANGELOG.md
 
 common warnings
     ghc-options: -Wall
+
+common extensions
+    -- GHC2021 is enabled since 9.2.1 (https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/control.html)
+    default-language: GHC2021
     default-extensions: LambdaCase
                         MultiWayIf
 
+common base-deps
+    build-depends: ghc >= 9.2.0,
+                   base >=4.17.0.0,
+                   template-haskell
+
+
 library
-    -- Import common warning flags.
-    import:           warnings
+    import:           warnings, extensions, base-deps
 
     -- Modules exported by the library.
     exposed-modules:  THSH.Funclet
@@ -77,10 +86,7 @@ library
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    ghc >= 9.2.0,
-                      base >=4.17.0.0,
-                      template-haskell,
-                      transformers,
+    build-depends:    transformers,
                       PyF,
                       parsec,
                       filepath,
@@ -90,15 +96,22 @@ library
     -- Directories containing source files.
     hs-source-dirs:   src
 
-    -- Base language which the package is written in.
-    default-language: GHC2021
+executable thsh
+    import:           warnings, extensions, base-deps
+    main-is:          main.hs
+    build-depends:    THSH,
+                      extra,
+                      split,
+                      filepath,
+                      process,
+                      PyF
+    hs-source-dirs:   loader
 
 test-suite THSH-test
-    -- Import common warning flags.
-    import:           warnings
+    import:           warnings, extensions, base-deps
 
-    -- Base language which the package is written in.
-    default-language: GHC2021
+    -- The interface type and version of the test suite.
+    type:             exitcode-stdio-1.0
 
     -- Modules included in this executable, other than Main.
     -- other-modules:
@@ -106,17 +119,9 @@ test-suite THSH-test
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
 
-    -- The interface type and version of the test suite.
-    type:             exitcode-stdio-1.0
-
-    -- Directories containing source files.
-    hs-source-dirs:   test
-
-    -- The entrypoint to the test suite.
     main-is:          Main.hs
-
-    -- Test dependencies.
     build-depends:
         base >=4.17.0.0,
         PyF,
         THSH
+    hs-source-dirs:   test

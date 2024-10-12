@@ -119,17 +119,19 @@ sets this project apart to offer a viable alternative to Haskell enthusiasts.
 
 **Features**
 
-- More `FnFunction` types.
-- THSH script loader, which uses either cabalrun or ghci.
-- Better quoting syntax, e.g. "!{ ... }": to replace the `PyF` parser or work with the upstream to reuse.
+- [x] THSH script loader, which uses "cabal run" single-script mode.
+- [ ] More `FnFunction` types.
+- [ ] Better quoting syntax, e.g. "!{ ... }": to replace the `PyF` parser or work with the upstream to reuse.
+- [ ] Support alternative base through a "--alternative-base" option.
 
 **Maintainability**
 
-- CI system.
-- More test cases.
+- [ ] CI system.
+- [ ] More test cases.
 
 **DevX**
 
-- Make the project compatible GHC 9.6+.
-- Publish to hackage.
-- Curate a live demo.
+- [ ] Publish to hackage.
+- [ ] Curate a live demo.
+- [ ] Make the project compatible GHC 9.6+.
+

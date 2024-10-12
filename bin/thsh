@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# Synopsis: Run 'thsh' executable during local development of the THSH project
+
+D=$(readlink -f "$(dirname "$0")"/..)
+
+COMPILER_ID=$(cabal path --output-format=json | jq -r '.compiler.id')
+
+LOCAL_PACKAGE_DB=$D/dist-newstyle/packagedb/${COMPILER_ID}
+USER_PACKAGE_DB=$(cabal path --store-dir)/${COMPILER_ID}-inplace/package.db
+
+THSH_EXTRA_PACKAGE_DBS=${LOCAL_PACKAGE_DB}:${USER_PACKAGE_DB} \
+exec cabal run --project-dir="$D" thsh -- "$@"

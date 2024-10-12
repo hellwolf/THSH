@@ -40,7 +40,7 @@ testFn = runFuncletWithStdHandles [thsh|\
 curl -s https://example.org/ | «fn (ContentFn (\content -> "Number of occurrences of the word 'example' is "
     <> show (length (filter ((== "examples"). fmap toLower) . words $ content))
     <> "\n"
-))»
+    ))»
 : end curl
 
 # pseudo sales numbers processing
