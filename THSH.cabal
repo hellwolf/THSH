@@ -86,7 +86,8 @@ library
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    transformers,
+    build-depends:    text,
+                      transformers,
                       PyF,
                       parsec,
                       filepath,

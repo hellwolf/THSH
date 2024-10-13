@@ -13,11 +13,11 @@ import           Data.List.Split       (splitOn)
 -- extra
 import           Data.List.Extra       (trimEnd)
 -- filepath
-import           System.FilePath       (splitExtension)
+import           System.FilePath       (dropFileName, splitExtension, takeFileName, (</>))
 -- process
 import           System.Process        (proc, waitForProcess, withCreateProcess)
 -- PyF
-import           PyF
+import           PyF                   (fmt)
 
 
 oops :: String -> IO a
@@ -107,7 +107,8 @@ genTHSHFile options scriptFile = do
         contents <- readScriptFile scriptFile
         hPutStr hdl =<< genTHSH options contents
         pure thshFile
-    ) where thshFile = splitExtension scriptFile & \(a, b) -> a ++ ".thsh" ++ b
+    ) where thshFile = splitExtension scriptFile
+                       & \(a, b) -> dropFileName a </> "." ++ takeFileName a ++ ".thsh" ++ b
 
 genTHSH :: [Flag] -> (String, String, String) -> IO String
 genTHSH options (strippedScript, cabalMeta, projectMeta) =

@@ -37,11 +37,10 @@ done
 
 testFn :: IO ExitCode
 testFn = runFuncletWithStdHandles [thsh|\
-curl -s https://example.org/ | «fn (ContentFn (\content -> "Number of occurrences of the word 'example' is "
+curl -s https://example.org/ | «fn (stringContentFn (\content -> "Number of occurrences of the word 'example' is "
     <> show (length (filter ((== "examples"). fmap toLower) . words $ content))
     <> "\n"
     ))»
-: end curl
 
 # pseudo sales numbers processing
 echo -n "Sum of the sales: "; {
@@ -50,9 +49,10 @@ echo -n "Sum of the sales: "; {
 ("orange", 2.0, 34.2)
 EOF
 } | tail -n1
-|] where lsum = LineReadFn
+|] where lsum = lineReadFn
                 (\ (_ :: String, price, quantity) s -> let s' = s + price * quantity
-                                                       in (s', Just (show s')))
+                                                       in (s', Nothing))
+                (\ s -> Just (show s ++ "\n"))
                 (0.0 :: Float)
 
 main :: IO ()

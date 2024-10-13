@@ -3,8 +3,8 @@
 import Data.Char (toLower)
 
 __main__ = [thsh|\
-curl -s https://www.haskell.org/ | «fn (ContentFn $
-  \content -> "Number of occurrences of the word 'haskell' is "
+curl -s https://www.haskell.org/ | «fn (stringContentFn $
+  \content -> "Number of occurrences of the word 'haskell' on haskell.org is "
     <> show (length (filter ((== "haskell"). fmap toLower) . words $ content))
     <> "\n"
   )
