@@ -1,3 +1,13 @@
+{-|
+Module      : THSH.Funclet
+Description : Funclet definition.
+Copyright   : (c) Miao ZhiCheng, 2024
+License     : MIT
+Maintainer  : zhicheng.miao@gmail.com
+Stability   : experimental
+Portability : POSIX
+-}
+
 module THSH.Funclet
   ( Funclet (..)
   , AnyFunclet (..)

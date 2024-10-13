@@ -1,3 +1,12 @@
+{-|
+Module      : THSH.Fn
+Description : Fn funclets are Haskell functions that talk with other funclets including the main shell script.
+Copyright   : (c) Miao ZhiCheng, 2024
+License     : MIT
+Maintainer  : zhicheng.miao@gmail.com
+Stability   : experimental
+Portability : POSIX
+-}
 module THSH.Fn
   ( ContentFn (..), stringContentFn, stringContentIOFn, textContentFn, textContentIOFn
   , LineReadFn (..), lineReadFn

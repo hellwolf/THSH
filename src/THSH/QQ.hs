@@ -1,3 +1,14 @@
+{-|
+Module      : THSH.QQ
+Description : Template Haskell qausi-quote machinary, heavily using code from PyF package.
+Copyright   : (c) Miao ZhiCheng, 2024
+License     : MIT
+Maintainer  : zhicheng.miao@gmail.com
+Stability   : experimental
+Portability : POSIX
+-}
+
+
 {-# LANGUAGE TemplateHaskellQuotes #-}
 
 module THSH.QQ

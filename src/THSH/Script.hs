@@ -1,3 +1,12 @@
+{-|
+Module      : THSH.Script
+Description : Script funclet create a system process for the shell script.
+Copyright   : (c) Miao ZhiCheng, 2024
+License     : MIT
+Maintainer  : zhicheng.miao@gmail.com
+Stability   : experimental
+Portability : POSIX
+-}
 {-# LANGUAGE QuasiQuotes #-}
 module THSH.Script
   ( Script (..)
