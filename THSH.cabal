@@ -44,6 +44,7 @@ maintainer:         zhicheng.miao@gmail.com
 -- copyright:
 category:           System
 build-type:         Simple
+tested-with:        GHC == { 9.10.1, 9.8.2, 9.6.6, 9.4.8, 9.2.8 }
 
 -- Extra doc files to be distributed with the package, such as a CHANGELOG or a README.
 extra-doc-files:    CHANGELOG.md
@@ -51,8 +52,6 @@ extra-doc-files:    CHANGELOG.md
 source-repository head
   type:             git
   location:         https://github.com/hellwolf/THSH
-
-tested-with:        GHC == { 9.10.1, 9.8.2, 9.6.6, 9.4.8, 9.2.8 }
 
 -- Extra source files to be distributed with the package, such as examples, or a tutorial module.
 -- extra-source-files:
