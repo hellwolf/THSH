@@ -20,7 +20,7 @@ name:               THSH
 -- PVP summary:     +-+------- breaking API changes
 --                  | | +----- non-breaking API additions
 --                  | | | +--- code changes with no API change
-version:            0.0.0.3
+version:            0.0.0.4
 
 -- A short (one-line) description of the package.
 synopsis: A "noDSL" approach to mixing shell scripting with Haskell programs using Template Haskell
@@ -47,7 +47,8 @@ build-type:         Simple
 tested-with:        GHC == { 9.10.1, 9.8.2, 9.6.6, 9.4.8, 9.2.8 }
 
 -- Extra doc files to be distributed with the package, such as a CHANGELOG or a README.
-extra-doc-files:    CHANGELOG.md
+extra-doc-files:    README.md
+                    CHANGELOG.md
 
 source-repository head
   type:             git
