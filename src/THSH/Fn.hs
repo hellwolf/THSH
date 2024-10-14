@@ -8,9 +8,10 @@ Stability   : experimental
 Portability : POSIX
 -}
 module THSH.Fn
-  ( ContentFn (..), stringContentFn, stringContentIOFn, textContentFn, textContentIOFn
+  ( FnFunction (..)
+  , ContentFn (..), stringContentFn, stringContentIOFn, textContentFn, textContentIOFn
   , LineReadFn (..), lineReadFn
-  , fn ) where
+  , Fn, fn ) where
 
 import           Control.Concurrent      (forkIO)
 import           Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar)
@@ -27,11 +28,18 @@ import qualified Data.Text.IO
 import           THSH.Funclet            (Funclet (..))
 
 
--- | A 'Fn' is a function that, given a set of handles to communicate with it, it returns an exit code.
+-- | A 'FnFunction' is a function that, given a set of handles to communicate with it, it returns an exit code.
 class FnFunction f where
   runFn :: f -> (Handle, Handle, Handle) -> IO ExitCode
 
--- | A 'Fn' that converts the entire input content to another as 'String'.
+-- | The new type wrapper of any "FnFunction" instance.
+newtype Fn f = MkFn f
+
+-- | Marker for the thsh quasi-quote to recognize a 'FnFunction' code block.
+fn :: FnFunction f => f -> Fn f
+fn = MkFn
+
+-- | A 'FnFunction' that converts the entire input content to another as 'String'.
 data ContentFn m s = MkContentFn (s -> m s) (Handle -> m s) (Handle -> s -> m ())
 
 instance FnFunction (ContentFn IO s) where
@@ -48,7 +56,7 @@ stringContentFn f = MkContentFn (pure . f) hGetContents hPutStr
 stringContentIOFn :: (String -> IO String) -> ContentFn IO String
 stringContentIOFn f = MkContentFn f hGetContents hPutStr
 
--- | 'ContentFn' for the 'Text' type from the text package.
+-- | 'ContentFn' for the 'Data.Text' type from the text package.
 textContentFn :: (T.Text -> T.Text) -> ContentFn IO T.Text
 textContentFn f = MkContentFn (pure . f) Data.Text.IO.hGetContents Data.Text.IO.hPutStr
 
@@ -56,14 +64,14 @@ textContentFn f = MkContentFn (pure . f) Data.Text.IO.hGetContents Data.Text.IO.
 textContentIOFn :: (T.Text -> IO T.Text) -> ContentFn IO T.Text
 textContentIOFn f = MkContentFn f Data.Text.IO.hGetContents Data.Text.IO.hPutStr
 
--- | A 'Fn' that reads line by line via 'Read' instances of @a@ and accumulates context @b@.
+-- | A 'FnFunction' that reads line by line via 'Read' instances of @a@ and accumulates context @b@.
 data LineReadFn m a b = Read a
                       => MkLineReadFn
-                         (a -> b -> m (b, Maybe String)) -- read an element; accumulate context; and maybe an output
-                         (b -> m (Maybe String))         -- final output
-                         b                               -- initial context
+                         (a -> b -> m (b, Maybe String)) -- ^ read an element; accumulate context; and maybe an output
+                         (b -> m (Maybe String))         -- ^ final output
+                         b                               -- ^ initial context
 
--- Idiomatic wrapper for the `MkLineReadFn`
+-- | Idiomatic wrapper for the `MkLineReadFn`
 lineReadFn :: forall a b.
               Read a
            => (a -> b -> (b, Maybe String))
@@ -90,12 +98,8 @@ instance FnFunction (LineReadFn IO a b) where
                        True  -> pure Nothing)
     pure ExitSuccess
 
--- | 'Fn' wraps a type of 'FnFunction' instance.
-data Fn f = FnFunction f => Fn f
-
--- | 'Fn' is a trivial 'Funclet'.
-instance Funclet (Fn f) where
-  runFunclet (Fn f) cb = do
+instance FnFunction f => Funclet (Fn f) where
+  runFunclet (MkFn f) cb = do
     handles <- newEmptyMVar
     _ <- forkIO $ bracket
       (do
@@ -109,6 +113,3 @@ instance Funclet (Fn f) where
       (\(hInR, hOutW, hErrW) -> mapM_ hClose [hInR, hOutW, hErrW])
       (\(hInR, hOutW, hErrW) -> cb =<< runFn f (hInR, hOutW, hErrW))
     takeMVar handles
-
-fn :: FnFunction f => f -> Fn f
-fn = Fn

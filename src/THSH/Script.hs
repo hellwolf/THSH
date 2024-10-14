@@ -36,9 +36,14 @@ import           THSH.Funclet               (AnyFunclet, Funclet (..))
 import           THSH.Internal.ProcessUtils (binaryCat, pollProcessExitCode)
 
 
+-- | A script is a funclet that has its source code and a list of other funclets it depends on.
 data Script = MkScript { source   :: String
                        , funclets :: [AnyFunclet]
                        }
+
+-- | Marker for the thsh quasi-quote to recognize a 'Script'.
+sh :: Script -> Script
+sh = id
 
 instance Funclet Script where
   runFunclet (MkScript { source, funclets }) cb = do
@@ -86,11 +91,9 @@ instance Funclet Script where
     (hInW, hOutR, hErrR) <- takeMVar handles
     pure (hInW, hOutR, hErrR)
 
+-- | The piping code snippet that should substitute the funclet occurrences during quasi quoting.
 genFuncletPipeCode :: Int -> String
 genFuncletPipeCode i = "__pipeFunclet " <> (show i)
-
-sh :: Script -> Script
-sh = id
 
 {- INTERNAL FUNCTIONS -}
 

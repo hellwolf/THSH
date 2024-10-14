@@ -1,3 +1,13 @@
+{-|
+Module      : THSH
+Description : The Template Haskell SHell library.
+Copyright   : (c) Miao ZhiCheng, 2024
+License     : MIT
+Maintainer  : zhicheng.miao@gmail.com
+Stability   : experimental
+Portability : POSIX
+-}
+
 module THSH
   ( module THSH.Funclet
   , module THSH.QQ
