@@ -14,7 +14,7 @@ module THSH.Internal.PyFInternals
 
 -- ghc modules
 import           GHC                        (SrcSpan)
-import           GHC.TypeError              (ErrorMessage (Text), TypeError)
+import           GHC.TypeLits               (ErrorMessage (Text), TypeError)
 import           Language.Haskell.TH.Syntax (Exp (..), Lit (..), Q (..))
 -- baes module
 import           Data.Kind                  (Type)

@@ -161,11 +161,11 @@ Here is an incomplete list of these projects:
 By now, it should be evident to you that requiring minimum learning of a new eDSL, aka "noDSL" to be tongue-in-cheek,
 sets this project apart to offer a viable alternative to Haskell enthusiasts.
 
-# (TODOs)
+# TODOs For The Beta (0.0.1.0) Release
 
 **Known Bugs and Limitations**
 
-- [ ] Test with GHC 9.2, 9.4, 9.6, 9.8.
+- [x] Test with GHC 9.2, 9.4, 9.6, 9.8.
 - [ ] User pragma fields should be rearranged.
 - [ ] stdin doesn't work interactively.
 - [ ] Better quoting syntax, e.g. "!{ ... }": to replace the `PyF` parser or work with the upstream to reuse.
@@ -188,5 +188,5 @@ sets this project apart to offer a viable alternative to Haskell enthusiasts.
 
 **DevX**
 
-- [ ] Curate a live demo.
-- [ ] Publish to hackage.
+- [x] Curate a live demo.
+- [x] Publish to hackage.

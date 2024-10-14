@@ -9,15 +9,30 @@ module THSH.Internal.THUtils
   ) where
 
 import           GHC                        (SrcSpan, moduleNameString)
-import           GHC.Tc.Errors.Types        (TcRnMessage (TcRnUnknownMessage))
 import           GHC.Tc.Types               (TcM)
 import           GHC.Tc.Utils.Monad         (addErrAt)
+#if MIN_VERSION_ghc(9,8,0)
+import           GHC.Tc.Errors.Types        (TcRnMessage (TcRnUnknownMessage))
 import           GHC.Types.Error            (NoDiagnosticOpts (NoDiagnosticOpts), UnknownDiagnostic (UnknownDiagnostic))
+import           GHC.Utils.Error            (mkPlainError, noHints)
+import           GHC.Utils.Outputable       (text)
+#elif MIN_VERSION_ghc(9,6,0)
+import           GHC.Tc.Errors.Types        (TcRnMessage (TcRnUnknownMessage))
+import           GHC.Types.Error            (UnknownDiagnostic (UnknownDiagnostic))
+import           GHC.Utils.Error            (mkPlainError, noHints)
+import           GHC.Utils.Outputable       (text)
+#elif MIN_VERSION_ghc(9,4,0)
+import           GHC.Driver.Errors.Types    (GhcMessage (GhcPsMessage))
+import           GHC.Parser.Errors.Types    (PsMessage (PsUnknownMessage))
+import           GHC.Tc.Errors.Types        (TcRnMessage (TcRnUnknownMessage))
+import           GHC.Utils.Error            (mkPlainError, noHints)
+import           GHC.Utils.Outputable       (text)
+#else
+import           Data.String                (fromString)
+#endif
 import           GHC.Types.Name             (getOccString, occNameString)
 import           GHC.Types.Name.Reader      (RdrName (..))
 import qualified GHC.Unit.Module            as Module
-import           GHC.Utils.Error            (mkPlainError, noHints)
-import           GHC.Utils.Outputable       (text)
 import qualified Language.Haskell.TH        as TH
 import           Language.Haskell.TH.Syntax (Q (Q))
 --
@@ -32,14 +47,12 @@ import           Unsafe.Coerce              (unsafeCoerce)
 reportErrorAt :: SrcSpan -> String -> Q ()
 reportErrorAt loc msg = unsafeRunTcM $ addErrAt loc msg'
   where
-#if MIN_VERSION_ghc(9,7,0)
+#if MIN_VERSION_ghc(9,8,0)
     msg' = TcRnUnknownMessage (UnknownDiagnostic (const NoDiagnosticOpts) (mkPlainError noHints (text msg)))
 #elif MIN_VERSION_ghc(9,6,0)
-    msg' = TcRnUnknownMessage (UnknownDiagnostic $ mkPlainError noHints $
-                         text msg)
-#elif MIN_VERSION_ghc(9,3,0)
-    msg' = TcRnUnknownMessage (GhcPsMessage $ PsUnknownMessage $ mkPlainError noHints $
-                         text msg)
+    msg' = TcRnUnknownMessage (UnknownDiagnostic $ mkPlainError noHints $ text msg)
+#elif MIN_VERSION_ghc(9,4,0)
+    msg' = TcRnUnknownMessage (GhcPsMessage $ PsUnknownMessage $ mkPlainError noHints $ text msg)
 #else
     msg' = fromString msg
 #endif

@@ -20,7 +20,7 @@ name:               THSH
 -- PVP summary:     +-+------- breaking API changes
 --                  | | +----- non-breaking API additions
 --                  | | | +--- code changes with no API change
-version:            0.0.0.2
+version:            0.0.0.3
 
 -- A short (one-line) description of the package.
 synopsis: A "noDSL" approach to mixing shell scripting with Haskell programs using Template Haskell
@@ -49,8 +49,10 @@ build-type:         Simple
 extra-doc-files:    CHANGELOG.md
 
 source-repository head
-  type:              git
-  location:          https://github.com/hellwolf/THSH
+  type:             git
+  location:         https://github.com/hellwolf/THSH
+
+tested-with:        GHC == { 9.10.1, 9.8.2, 9.6.6, 9.4.8, 9.2.8 }
 
 -- Extra source files to be distributed with the package, such as examples, or a tutorial module.
 -- extra-source-files:
@@ -66,9 +68,8 @@ common extensions
 
 common base-deps
     build-depends: ghc >= 9.2.0,
-                   base >= 4.17.0.0 && <= 9999.0.0.0,
+                   base >= 4.16.0.0 && <= 9999.0.0.0,
                    template-haskell
-
 
 library
     import:           warnings, extensions, base-deps
@@ -126,7 +127,6 @@ test-suite THSH-test
 
     main-is:          Main.hs
     build-depends:
-        base >=4.17.0.0,
         PyF,
         THSH
     hs-source-dirs:   test

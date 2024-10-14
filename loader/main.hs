@@ -43,8 +43,8 @@ main = do
 helpHeader :: String
 helpHeader = "Usage: thsh script [OPTION...] [--] [args...]"
 
-data Flag = Verbosity   !Int    -- valid values: 0..3; invalid values -> -1
-          | UseLanguageEdition String
+data Flag = Verbosity !Int    -- valid values: 0..3; invalid values -> -1
+          | UseLanguageEdition !String
           | DisableBlockArguments
           | PrintHelp
             deriving (Show, Eq)
