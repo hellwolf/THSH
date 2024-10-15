@@ -28,7 +28,7 @@ import           System.IO                  (BufferMode (NoBuffering), Handle,
 import           System.FilePath            ((</>))
 -- process module
 import           System.Process             (CreateProcess (..), StdStream (CreatePipe, UseHandle), callCommand,
-                                             createProcess, shell, withCreateProcess)
+                                             createProcess, shell)
 -- temporary module
 import           System.IO.Temp             (withSystemTempDirectory)
 -- PyF module
@@ -89,10 +89,10 @@ run_script_funclet (MkScript { source, funclets }) cb providedHandles = do
         --                                             , std_out = UseHandle hOutW
         --                                             , std_err = UseHandle hErrW
         --                                             }
-        --       Nothing -> procSpec { std_in  = CreatePipe
-        --                           , std_out = CreatePipe
-        --                           , std_err = CreatePipe
-        --                           }
+        --       Nothing                   -> procSpec { std_in  = CreatePipe
+        --                                             , std_out = CreatePipe
+        --                                             , std_err = CreatePipe
+        --                                             }
         --   )
         --   (\ cases
         --     (Just hInW) (Just hOutR) (Just hErrR) mainProc -> putMVar mProcHandles (Just (hInW, hOutR, hErrR))
@@ -106,10 +106,10 @@ run_script_funclet (MkScript { source, funclets }) cb providedHandles = do
                                                     , std_out = UseHandle hOutW
                                                     , std_err = UseHandle hErrW
                                                     }
-              Nothing -> procSpec { std_in  = CreatePipe
-                                  , std_out = CreatePipe
-                                  , std_err = CreatePipe
-                                  }
+              Nothing                   -> procSpec { std_in  = CreatePipe
+                                                    , std_out = CreatePipe
+                                                    , std_err = CreatePipe
+                                                    }
           )
           >>= (\ cases
                 (Just hInW, Just hOutR, Just hErrR, mainProc) -> putMVar mProcHandles (Just (hInW, hOutR, hErrR))
