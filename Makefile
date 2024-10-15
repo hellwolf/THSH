@@ -9,4 +9,4 @@ test-all-ghcs:
 			-c -- bash -c "ghc --version; cabal clean; cabal test" \
 	) done
 
-.PHONY: test-*
+.PHONY: test test-*

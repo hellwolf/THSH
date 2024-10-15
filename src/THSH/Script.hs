@@ -18,15 +18,17 @@ module THSH.Script
 import           Control.Concurrent         (forkIO, newEmptyMVar, putMVar, takeMVar)
 import           Control.Exception          (bracket, catch)
 import           Control.Monad              (unless, void)
+import           Data.Function              ((&))
+import           Data.Maybe                 (fromJust)
 import           System.Exit                (ExitCode (..))
-import           System.IO                  (BufferMode (NoBuffering), IOMode (ReadMode, ReadWriteMode, WriteMode),
-                                             hClose, hGetLine, hPutStr, hPutStrLn, hSetBuffering, openBinaryFile,
-                                             stderr, withFile)
+import           System.IO                  (BufferMode (NoBuffering), Handle,
+                                             IOMode (ReadMode, ReadWriteMode, WriteMode), hClose, hGetLine, hPutStr,
+                                             hPutStrLn, hSetBuffering, openBinaryFile, stderr, withFile)
 -- filepath module
 import           System.FilePath            ((</>))
 -- process module
-import           System.Process             (CreateProcess (std_err, std_in, std_out), StdStream (CreatePipe),
-                                             callCommand, createProcess, shell)
+import           System.Process             (CreateProcess (..), StdStream (CreatePipe, UseHandle), callCommand,
+                                             createProcess, shell, withCreateProcess)
 -- temporary module
 import           System.IO.Temp             (withSystemTempDirectory)
 -- PyF module
@@ -36,66 +38,107 @@ import           THSH.Funclet               (AnyFunclet, Funclet (..))
 import           THSH.Internal.ProcessUtils (binaryCat, pollProcessExitCode)
 
 
--- | A script is a funclet that has its source code and a list of other funclets it depends on.
+-- | A script contains shell source code and a list of other funclets it depends on.
 data Script = MkScript { source   :: String
                        , funclets :: [AnyFunclet]
                        }
 
--- | Marker for the thsh quasi-quote to recognize a 'Script'.
+-- | The marker for the 'thsh' quasi-quote to recognize a 'Script'.
 sh :: Script -> Script
 sh = id
 
+-- | The 'Script' instance of 'Funclet'.
 instance Funclet Script where
-  runFunclet (MkScript { source, funclets }) cb = do
-    handles <- newEmptyMVar
-    _ <- forkIO $ withSystemTempDirectory "thsh-script.d" $ \ dir -> do
-          let initCodePath = dir </> "init.sh"
-              srcPath      = dir </> "source.sh"
-              ctlFifo      = dir </> "cr.fifo"
+  runFunclet script cb = run_script_funclet script cb Nothing >>= pure . fromJust
 
-          -- write init code
-          withFile initCodePath WriteMode $ \fh -> hPutStr fh (gen_init_code (length funclets))
-
-          -- call init code
-          callCommand ("sh " <> initCodePath)
-
-          -- write source file
-          withFile srcPath WriteMode $ \fh -> do
-            hPutStr fh gen_stub_code
-            hPutStr fh source
-
-          -- create the main process
-          (Just hInW, Just hOutR, Just hErrR, mainProc) <- createProcess $
-            (shell ("sh " <> srcPath)) { std_in  = CreatePipe
-                                       , std_out = CreatePipe
-                                       , std_err = CreatePipe
-                                       }
-          putMVar handles (hInW, hOutR, hErrR)
-
-          -- create control thread
-          unless (length funclets == 0) $ void . forkIO $ withFile ctlFifo ReadMode $ \ ch -> let
-            go = do
-              catch (hGetLine ch) (\ (e :: IOError) -> hPutStrLn stderr (show e) >> pure []) >>= \cmd -> do
-                case cmd of
-                  []        -> pure () -- likely end of file
-                  's':' ':i -> start_funclet_proc (funclets !! (read i :: Int)) (dir </> i) >> pure ()
-                  _         -> hPutStrLn stderr $ "[thsh-script] unknown control command: " <> cmd
-                if cmd /= "" then go else pure ()
-            in go
-
-          -- wait for the main sub process to finish
-          ec <- pollProcessExitCode mainProc
-
-          cb ec
-
-    (hInW, hOutR, hErrR) <- takeMVar handles
-    pure (hInW, hOutR, hErrR)
+  runFuncletWithHandles script cb providedHandles = void (run_script_funclet script cb (Just providedHandles))
 
 -- | The piping code snippet that should substitute the funclet occurrences during quasi quoting.
 genFuncletPipeCode :: Int -> String
 genFuncletPipeCode i = "__pipeFunclet " <> (show i)
 
 {- INTERNAL FUNCTIONS -}
+
+run_script_funclet :: Script -> (ExitCode -> IO ()) -> Maybe (Handle, Handle, Handle)
+                   -> IO (Maybe (Handle, Handle, Handle))
+run_script_funclet (MkScript { source, funclets }) cb providedHandles = do
+  mProcHandles <- newEmptyMVar
+
+  _ <- forkIO $ withSystemTempDirectory "thsh-script.d" $ \ dir -> do
+        let initCodePath = dir </> "init.sh"
+            srcPath      = dir </> "source.sh"
+            ctlFifo      = dir </> "cr.fifo"
+
+        -- write init code
+        withFile initCodePath WriteMode $ \fh -> hPutStr fh (gen_init_code (length funclets))
+
+        -- call init code
+        callCommand ("sh " <> initCodePath)
+
+        -- write source file
+        withFile srcPath WriteMode $ \fh -> do
+          hPutStr fh gen_stub_code
+          hPutStr fh source
+
+        -- create the shell script process
+        mMainProc <- newEmptyMVar
+        -- TODO: I can't make this work with withCreateProcess
+        -- withCreateProcess
+        --   (shell ("sh " <> srcPath) & \ procSpec -> case providedHandles of
+        --       Just (hInR, hOutW, hErrW) -> procSpec { std_in  = UseHandle hInR
+        --                                             , std_out = UseHandle hOutW
+        --                                             , std_err = UseHandle hErrW
+        --                                             }
+        --       Nothing -> procSpec { std_in  = CreatePipe
+        --                           , std_out = CreatePipe
+        --                           , std_err = CreatePipe
+        --                           }
+        --   )
+        --   (\ cases
+        --     (Just hInW) (Just hOutR) (Just hErrR) mainProc -> putMVar mProcHandles (Just (hInW, hOutR, hErrR))
+        --                                                       >> putMVar mMainProc mainProc
+        --     _ _ _                                 mainProc -> putMVar mProcHandles Nothing
+        --                                                       >> putMVar mMainProc mainProc
+        --   )
+        createProcess
+          (shell ("sh " <> srcPath) & \ procSpec -> case providedHandles of
+              Just (hInR, hOutW, hErrW) -> procSpec { std_in  = UseHandle hInR
+                                                    , std_out = UseHandle hOutW
+                                                    , std_err = UseHandle hErrW
+                                                    }
+              Nothing -> procSpec { std_in  = CreatePipe
+                                  , std_out = CreatePipe
+                                  , std_err = CreatePipe
+                                  }
+          )
+          >>= (\ cases
+                (Just hInW, Just hOutR, Just hErrR, mainProc) -> putMVar mProcHandles (Just (hInW, hOutR, hErrR))
+                                                                 >> putMVar mMainProc mainProc
+                (_, _, _,                           mainProc) -> putMVar mProcHandles Nothing
+                                                                 >> putMVar mMainProc mainProc
+          )
+
+        -- create control thread
+        unless (length funclets == 0) $ void . forkIO $ withFile ctlFifo ReadMode $ \ ch -> let
+          go = do
+            catch
+              (hGetLine ch)
+              (\ (e :: IOError) -> hPutStrLn stderr ("THSH.Script control thread error: " <> show e) >> pure [])
+              >>= \cmd -> do
+              case cmd of
+                []        -> pure () -- likely end of file
+                's':' ':i -> start_funclet_proc (funclets !! (read i :: Int)) (dir </> i) >> pure ()
+                _         -> hPutStrLn stderr $ "[thsh-script] unknown control command: " <> cmd
+              if cmd /= "" then go else pure ()
+          in go
+
+        catch
+          (takeMVar mMainProc >>= pollProcessExitCode >>= cb)
+          (\ (e :: IOError) -> hPutStrLn stderr ("THSH.Script funclet thread error: " <> show e)
+                               >> cb (ExitFailure 2))
+
+  takeMVar mProcHandles
+
 
 start_funclet_proc :: Funclet f => f -> FilePath -> IO ()
 start_funclet_proc f procDir = do

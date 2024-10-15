@@ -13,19 +13,13 @@ module THSH.Fn
   , LineReadFn (..), lineReadFn
   , Fn, fn ) where
 
-import           Control.Concurrent      (forkIO)
-import           Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar)
-import           Control.Exception       (bracket)
-import           System.Exit             (ExitCode (..))
-import           System.IO               (BufferMode (NoBuffering), Handle, hClose, hGetContents, hGetLine, hIsEOF,
-                                          hPutStr, hSetBuffering)
--- process
-import           System.Process          (createPipe)
+import           System.Exit  (ExitCode (..))
+import           System.IO    (Handle, hGetContents, hGetLine, hIsEOF, hPutStr)
 -- text
-import qualified Data.Text               as T
+import qualified Data.Text    as T
 import qualified Data.Text.IO
 --
-import           THSH.Funclet            (Funclet (..))
+import           THSH.Funclet (Funclet (..))
 
 
 -- | A 'FnFunction' is a function that, given a set of handles to communicate with it, it returns an exit code.
@@ -35,7 +29,7 @@ class FnFunction f where
 -- | The new type wrapper of any "FnFunction" instance.
 newtype Fn f = MkFn f
 
--- | Marker for the thsh quasi-quote to recognize a 'FnFunction' code block.
+-- | The marker for the 'thsh' quasi-quote to recognize a 'FnFunction' code block.
 fn :: FnFunction f => f -> Fn f
 fn = MkFn
 
@@ -98,18 +92,6 @@ instance FnFunction (LineReadFn IO a b) where
                        True  -> pure Nothing)
     pure ExitSuccess
 
+-- | The 'FnFunction' instance of 'Funclet'.
 instance FnFunction f => Funclet (Fn f) where
-  runFunclet (MkFn f) cb = do
-    handles <- newEmptyMVar
-    _ <- forkIO $ bracket
-      (do
-          (hInR, hInW)   <- createPipe
-          (hOutR, hOutW) <- createPipe
-          (hErrR, hErrW) <- createPipe
-          mapM_ (`hSetBuffering` NoBuffering) [hInR, hInW, hOutR, hOutW, hErrR, hErrW]
-          putMVar handles (hInW, hOutR, hErrR)
-          pure (hInR, hOutW, hErrW)
-      )
-      (\(hInR, hOutW, hErrW) -> mapM_ hClose [hInR, hOutW, hErrW])
-      (\(hInR, hOutW, hErrW) -> cb =<< runFn f (hInR, hOutW, hErrW))
-    takeMVar handles
+  runFuncletWithHandles (MkFn f) cb handles = cb =<< runFn f handles

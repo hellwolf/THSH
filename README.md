@@ -166,8 +166,9 @@ sets this project apart to offer a viable alternative to Haskell enthusiasts.
 **Known Bugs and Limitations**
 
 - [x] Test with GHC 9.2, 9.4, 9.6, 9.8.
-- [ ] User pragma fields should be rearranged.
-- [ ] stdin doesn't work interactively.
+- [x] User pragma fields should be rearranged.
+- [x] stdin doesn't work interactively.
+- [ ] withSystemTempDirectory is not water-proof.
 - [ ] Better quoting syntax, e.g. "!{ ... }": to replace the `PyF` parser or work with the upstream to reuse.
 
 **Features**
@@ -190,3 +191,4 @@ sets this project apart to offer a viable alternative to Haskell enthusiasts.
 
 - [x] Curate a live demo.
 - [x] Publish to hackage.
+- [ ] A "how does it work" section in README.
